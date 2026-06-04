@@ -143,7 +143,7 @@
   <div class="back-link"><a href="#" onclick="goCardapio();return false;">← Voltar ao cardápio</a></div>
 </div>
 
-<div class="toast" id="toast">Pedido enviado! 🎉</div>
+<div class="toast" id="toast">Pedido enviado para o Jaime! ⏳</div>
 
 <script>
 var DB = 'https://restaurante-farina-default-rtdb.firebaseio.com';
@@ -255,7 +255,7 @@ function sendOrder(){
   if(!garcom){alert('Selecione o garçom antes de enviar!');return;}
   var btn=document.getElementById('sendBtn');btn.disabled=true;btn.textContent='Enviando...';
   var items=cartItems().map(function(e){var it=MENU.find(function(i){return i.id==e[0];});return{name:it.name,emoji:it.emoji,qty:e[1],price:it.price};});
-  var order={mesa:mesa,garcom:garcom,obs:document.getElementById('obsInput').value,items:items,total:total(),status:'pending',time:new Date().toISOString()};
+  var order={mesa:mesa,garcom:garcom,obs:document.getElementById('obsInput').value,items:items,total:total(),status:'aguardando_chefe',time:new Date().toISOString()};
   fetch(DB+'/orders.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)})
     .then(function(){
       cart={};document.getElementById('obsInput').value='';document.getElementById('mesaSel').value='';document.getElementById('garcomSel').value='';
