@@ -162,6 +162,24 @@
 var DB = 'https://restaurante-farina-default-rtdb.firebaseio.com';
 var MENU = [], CATS = ['Todos'], cart = {}, currentCat = 'Todos';
 
+var DEFAULT_MENU = [
+  { id:1, cat:'Entradas', name:'Bruschetta', desc:'Pão tostado com tomate e manjericão', price:18, emoji:'🥖', active:true },
+  { id:2, cat:'Entradas', name:'Carpaccio', desc:'Carne bovina com parmesão e rúcula', price:32, emoji:'🥩', active:true },
+  { id:3, cat:'Entradas', name:'Sopa do Dia', desc:'Pergunte ao garçom', price:22, emoji:'🍲', active:true },
+  { id:4, cat:'Massas', name:'Spaghetti Bolonhesa', desc:'Molho de carne moída', price:42, emoji:'🍝', active:true },
+  { id:5, cat:'Massas', name:'Fettuccine ao Pesto', desc:'Pesto de manjericão fresco', price:38, emoji:'🍜', active:true },
+  { id:6, cat:'Massas', name:'Lasanha da Casa', desc:'Massa, queijo e molho especial', price:45, emoji:'🫕', active:true },
+  { id:7, cat:'Carnes', name:'Filé ao Molho Madeira', desc:'Filé mignon grelhado', price:68, emoji:'🥩', active:true },
+  { id:8, cat:'Carnes', name:'Costelinha BBQ', desc:'Molho barbecue defumado', price:55, emoji:'🍖', active:true },
+  { id:9, cat:'Pizzas', name:'Margherita', desc:'Molho, muçarela e manjericão', price:48, emoji:'🍕', active:true },
+  { id:10, cat:'Pizzas', name:'Quatro Queijos', desc:'Muçarela, parmesão, gorgonzola, catupiry', price:52, emoji:'🍕', active:true },
+  { id:11, cat:'Bebidas', name:'Suco Natural', desc:'Laranja, limão ou maracujá', price:12, emoji:'🍊', active:true },
+  { id:12, cat:'Bebidas', name:'Refrigerante', desc:'Coca, Guaraná ou Soda', price:8, emoji:'🥤', active:true },
+  { id:13, cat:'Bebidas', name:'Água Mineral', desc:'Com ou sem gás', price:6, emoji:'💧', active:true },
+  { id:14, cat:'Sobremesas', name:'Tiramisu', desc:'Café e mascarpone', price:28, emoji:'🍰', active:true },
+  { id:15, cat:'Sobremesas', name:'Petit Gâteau', desc:'Bolo quente com sorvete', price:32, emoji:'🎂', active:true }
+];
+
 function fmt(v){ return 'R$ '+v.toFixed(2).replace('.',','); }
 
 function elapsed(iso){
@@ -233,11 +251,16 @@ function reject(key){
 // CARDÁPIO
 function loadData(){
   fetch(DB+'/menu.json').then(function(r){return r.json();}).then(function(data){
-    MENU = data ? Object.values(data).filter(function(i){return i.active!==false;}) : [];
+    MENU = data ? Object.values(data).filter(function(i){return i.active!==false;}) : DEFAULT_MENU.slice();
     var cs={};MENU.forEach(function(i){cs[i.cat]=true;});
     CATS=['Todos'].concat(Object.keys(cs));
     renderCats(); renderItems();
-  }).catch(function(){});
+  }).catch(function(){
+    MENU = DEFAULT_MENU.slice();
+    var cs={};MENU.forEach(function(i){cs[i.cat]=true;});
+    CATS=['Todos'].concat(Object.keys(cs));
+    renderCats(); renderItems();
+  });
 }
 
 function renderCats(){
