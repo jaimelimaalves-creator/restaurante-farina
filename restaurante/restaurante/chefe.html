@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chefe – Farina</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Segoe UI',sans-serif; background:#111; color:#fff; max-width:520px; margin:0 auto; min-height:100vh; }
+
+  .italia-bar { height:5px; background:linear-gradient(to right,#009246 33.3%,#fff 33.3%,#fff 66.6%,#ce2b37 66.6%); }
+
+  header { background:#0a0a0a; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #222; position:sticky; top:0; z-index:50; }
+  .header-logo .brand { font-size:1.1rem; font-weight:800; letter-spacing:3px; }
+  .brand span.g { color:#009246; }
+  .brand span.r { color:#ce2b37; }
+  .header-logo .sub { font-size:0.65rem; color:#555; letter-spacing:1px; text-transform:uppercase; }
+  .badge-chefe { background:#f39c12; color:#000; font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:12px; letter-spacing:0.5px; }
+
+  .tabs { display:flex; background:#0a0a0a; border-bottom:1px solid #222; }
+  .tab { flex:1; padding:13px; text-align:center; font-size:0.85rem; font-weight:700; color:#555; cursor:pointer; border:none; background:transparent; border-bottom:3px solid transparent; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; }
+  .tab.active { color:#f39c12; border-bottom-color:#f39c12; }
+
+  /* APROVAÇÕES */
+  .section { padding:16px; }
+  .section-title { font-size:0.75rem; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+
+  .approval-card { background:#161616; border:1px solid #2a2a2a; border-radius:12px; margin-bottom:12px; overflow:hidden; }
+  .approval-card.urgent { border-color:#f39c12; }
+  .approval-header { padding:12px 16px; background:#1a1a1a; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #222; }
+  .approval-info h3 { font-size:0.95rem; font-weight:700; }
+  .approval-info p { font-size:0.75rem; color:#666; margin-top:2px; }
+  .approval-time { font-size:0.75rem; color:#f39c12; font-weight:700; background:rgba(243,156,18,0.1); padding:3px 8px; border-radius:8px; }
+
+  .approval-items { padding:12px 16px; }
+  .approval-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #1a1a1a; font-size:0.88rem; }
+  .approval-item:last-child { border-bottom:none; }
+  .approval-item-qty { background:rgba(255,255,255,0.08); border-radius:4px; padding:2px 7px; font-weight:700; font-size:0.8rem; }
+  .approval-obs { margin:0 16px 12px; background:rgba(243,156,18,0.08); border-left:3px solid #f39c12; padding:7px 10px; border-radius:0 6px 6px 0; font-size:0.8rem; color:#f39c12; }
+
+  .approval-actions { display:flex; gap:8px; padding:12px 16px; background:rgba(0,0,0,0.2); }
+  .btn-approve { flex:2; padding:11px; background:#009246; color:white; border:none; border-radius:8px; font-weight:700; font-size:0.9rem; cursor:pointer; }
+  .btn-approve:active { background:#007a3a; }
+  .btn-reject { flex:1; padding:11px; background:#1a1a1a; color:#ce2b37; border:1px solid #ce2b37; border-radius:8px; font-weight:700; font-size:0.9rem; cursor:pointer; }
+  .btn-reject:active { background:#2a0a0a; }
+
+  .empty-state { text-align:center; padding:60px 20px; color:#333; }
+  .empty-state span { font-size:3rem; display:block; margin-bottom:12px; }
+
+  /* FAZER PEDIDO (igual garcom.html) */
+  .mesa-bar { background:#161616; padding:12px 16px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px; }
+  .mesa-bar label { font-size:0.85rem; font-weight:600; color:#aaa; white-space:nowrap; }
+  .mesa-bar select { flex:1; padding:8px 10px; border:1px solid #333; border-radius:8px; font-size:0.9rem; outline:none; background:#1a1a1a; color:white; }
+
+  .search-bar { padding:10px 16px; background:#161616; border-bottom:1px solid #222; }
+  .search-bar input { width:100%; padding:9px 12px; border:1px solid #333; border-radius:8px; font-size:0.9rem; outline:none; background:#1a1a1a; color:white; }
+  .search-bar input::placeholder { color:#555; }
+
+  .cat-scroll { display:flex; gap:8px; padding:12px 16px; overflow-x:auto; background:#111; border-bottom:1px solid #222; }
+  .cat-scroll::-webkit-scrollbar { display:none; }
+  .cat-chip { white-space:nowrap; padding:6px 16px; border-radius:16px; border:1px solid #444; background:#1a1a1a; color:#ccc; font-size:0.8rem; font-weight:600; cursor:pointer; }
+  .cat-chip.active { background:#f39c12; color:#000; border-color:#f39c12; }
+
+  .item-list { padding:6px 0; }
+  .item-row { display:flex; align-items:center; gap:12px; padding:13px 16px; background:#161616; border-bottom:1px solid #1f1f1f; }
+  .item-emoji { font-size:2rem; width:44px; text-align:center; }
+  .item-info { flex:1; }
+  .item-info h3 { font-size:0.95rem; font-weight:600; }
+  .item-info p { font-size:0.78rem; color:#666; margin-top:2px; }
+  .item-price { color:#009246; font-weight:700; font-size:0.95rem; white-space:nowrap; }
+  .qty-ctrl { display:flex; align-items:center; gap:8px; }
+  .qbtn { width:32px; height:32px; border-radius:50%; border:1px solid #444; background:#1a1a1a; color:#fff; font-size:1.1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .qbtn:active { background:#f39c12; border-color:#f39c12; color:#000; }
+  .qnum { font-weight:700; min-width:18px; text-align:center; }
+
+  .cart-section { background:#161616; border-top:1px solid #222; }
+  .cart-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #1f1f1f; }
+  .cart-row-emoji { font-size:1.5rem; }
+  .cart-row-info { flex:1; font-size:0.9rem; font-weight:600; }
+  .cart-row-info small { color:#666; font-weight:400; font-size:0.78rem; display:block; }
+  .cart-row-price { color:#009246; font-weight:700; }
+
+  .obs-block { padding:12px 16px; background:#161616; border-bottom:1px solid #222; }
+  .obs-block label { font-size:0.78rem; font-weight:600; color:#666; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .obs-block input { width:100%; padding:9px 12px; border:1px solid #333; border-radius:8px; font-size:0.9rem; outline:none; background:#1a1a1a; color:white; }
+
+  .cart-total-bar { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#0a0a0a; font-weight:700; font-size:1rem; }
+  .cart-total-bar span:last-child { color:#009246; }
+
+  .send-btn { width:calc(100% - 32px); margin:12px 16px; padding:14px; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; display:block; }
+  .send-btn.direct { background:#009246; color:white; }
+  .send-btn.direct:active { background:#007a3a; }
+  .send-btn:disabled { background:#333; color:#666; cursor:not-allowed; }
+
+  .back-link { text-align:center; padding-bottom:16px; }
+  .back-link a { color:#f39c12; font-size:0.85rem; font-weight:600; text-decoration:none; }
+
+  .notif-dot { width:8px; height:8px; border-radius:50%; background:#ce2b37; display:inline-block; margin-left:4px; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.3;} }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#009246; color:white; padding:12px 24px; border-radius:24px; font-weight:700; font-size:0.9rem; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; z-index:999; }
+  .toast.show { opacity:1; }
+
+  .counter-badge { background:#ce2b37; color:white; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; margin-left:5px; }
+</style>
+</head>
+<body>
+
+<div class="italia-bar"></div>
+<header>
+  <div class="header-logo">
+    <div class="brand"><span class="g">FA</span>RI<span class="r">NA</span></div>
+    <div class="sub">Garçom Chefe</div>
+  </div>
+  <span class="badge-chefe">👑 JAIME</span>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('aprovacoes')" id="tab-aprovacoes">
+    Aprovações <span class="counter-badge" id="countBadge" style="display:none">0</span>
+  </button>
+  <button class="tab" onclick="showTab('pedido')" id="tab-pedido">Fazer Pedido</button>
+</div>
+
+<!-- ABA APROVAÇÕES -->
+<div id="tabAprovacoes">
+  <div class="section">
+    <div class="section-title">Pedidos aguardando sua aprovação</div>
+    <div id="approvalList"><div class="empty-state"><span>✅</span>Nenhum pedido pendente</div></div>
+  </div>
+</div>
+
+<!-- ABA FAZER PEDIDO -->
+<div id="tabPedido" style="display:none">
+  <div class="mesa-bar"><label>Mesa:</label>
+    <select id="mesaSel">
+      <option value="">— Selecione —</option>
+      <option>Mesa 1</option><option>Mesa 2</option><option>Mesa 3</option>
+      <option>Mesa 4</option><option>Mesa 5</option><option>Mesa 6</option><option>Balcão</option>
+    </select>
+  </div>
+  <div id="viewCardapio">
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Buscar item..." oninput="renderItems()"></div>
+    <div class="cat-scroll" id="catScroll"></div>
+    <div class="item-list" id="itemList"><div class="empty-state">Carregando...</div></div>
+  </div>
+  <div id="viewCarrinho" style="display:none">
+    <div class="cart-section" id="cartRows"></div>
+    <div class="obs-block">
+      <label>Observações</label>
+      <input type="text" id="obsInput" placeholder="Ex: sem cebola...">
+    </div>
+    <div class="cart-total-bar"><span>Total</span><span id="totalVal">R$ 0,00</span></div>
+    <button class="send-btn direct" id="sendBtn" onclick="sendDirect()">✅ Enviar direto para a Cozinha</button>
+    <div class="back-link"><a href="#" onclick="goCardapio();return false;">← Voltar ao cardápio</a></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var DB = 'https://restaurante-farina-default-rtdb.firebaseio.com';
+var MENU = [], CATS = ['Todos'], cart = {}, currentCat = 'Todos';
+
+function fmt(v){ return 'R$ '+v.toFixed(2).replace('.',','); }
+
+function elapsed(iso){
+  var d=Math.floor((Date.now()-new Date(iso))/1000),m=Math.floor(d/60),s=d%60;
+  return m+'m'+s+'s atrás';
+}
+
+// TABS
+function showTab(t){
+  document.getElementById('tabAprovacoes').style.display = t==='aprovacoes'?'block':'none';
+  document.getElementById('tabPedido').style.display = t==='pedido'?'block':'none';
+  document.getElementById('tab-aprovacoes').classList.toggle('active', t==='aprovacoes');
+  document.getElementById('tab-pedido').classList.toggle('active', t==='pedido');
+}
+
+// APROVAÇÕES
+function loadApprovals(){
+  fetch(DB+'/orders.json').then(function(r){return r.json();}).then(function(data){
+    var pending = [];
+    if(data){
+      Object.keys(data).forEach(function(k){
+        if(data[k].status==='aguardando_chefe') pending.push(Object.assign({},data[k],{key:k}));
+      });
+    }
+    pending.sort(function(a,b){return new Date(a.time)-new Date(b.time);});
+
+    var badge = document.getElementById('countBadge');
+    if(pending.length){
+      badge.textContent = pending.length;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    var el = document.getElementById('approvalList');
+    if(!pending.length){
+      el.innerHTML='<div class="empty-state"><span>✅</span>Nenhum pedido pendente</div>';
+      return;
+    }
+    el.innerHTML = pending.map(function(o){
+      var items = o.items.map(function(it){
+        return '<div class="approval-item"><span>'+it.emoji+'</span><span class="approval-item-qty">'+it.qty+'x</span><span>'+it.name+'</span></div>';
+      }).join('');
+      return '<div class="approval-card urgent">'
+        +'<div class="approval-header">'
+        +'<div class="approval-info"><h3>🪑 '+o.mesa+(o.garcom?' · 👤 '+o.garcom:'')+'</h3><p>'+elapsed(o.time)+'</p></div>'
+        +'<span class="approval-time">'+fmt(o.total)+'</span>'
+        +'</div>'
+        +'<div class="approval-items">'+items+'</div>'
+        +(o.obs?'<div class="approval-obs">📝 '+o.obs+'</div>':'')
+        +'<div class="approval-actions">'
+        +'<button class="btn-approve" onclick="approve(\''+o.key+'\')">✅ Aprovar → Cozinha</button>'
+        +'<button class="btn-reject" onclick="reject(\''+o.key+'\')">✕ Recusar</button>'
+        +'</div></div>';
+    }).join('');
+  }).catch(function(){});
+}
+
+function approve(key){
+  fetch(DB+'/orders/'+key+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'pending'})})
+    .then(function(){toast('✅ Pedido enviado para a cozinha!');loadApprovals();});
+}
+
+function reject(key){
+  if(!confirm('Recusar este pedido?')) return;
+  fetch(DB+'/orders/'+key+'.json',{method:'DELETE'}).then(function(){toast('Pedido recusado.');loadApprovals();});
+}
+
+// CARDÁPIO
+function loadData(){
+  fetch(DB+'/menu.json').then(function(r){return r.json();}).then(function(data){
+    MENU = data ? Object.values(data).filter(function(i){return i.active!==false;}) : [];
+    var cs={};MENU.forEach(function(i){cs[i.cat]=true;});
+    CATS=['Todos'].concat(Object.keys(cs));
+    renderCats(); renderItems();
+  }).catch(function(){});
+}
+
+function renderCats(){
+  document.getElementById('catScroll').innerHTML=CATS.map(function(c){
+    return '<div class="cat-chip '+(c===currentCat?'active':'')+'" onclick="selectCat(\''+c+'\')">'+c+'</div>';
+  }).join('');
+}
+function selectCat(c){currentCat=c;renderCats();renderItems();}
+
+function renderItems(){
+  var q=document.getElementById('searchInput').value.toLowerCase();
+  var items=currentCat==='Todos'?MENU:MENU.filter(function(i){return i.cat===currentCat;});
+  if(q) items=items.filter(function(i){return i.name.toLowerCase().indexOf(q)>=0;});
+  document.getElementById('itemList').innerHTML=items.map(function(item){
+    var qty=cart[item.id]||0;
+    return '<div class="item-row">'
+      +'<div class="item-emoji">'+item.emoji+'</div>'
+      +'<div class="item-info"><h3>'+item.name+'</h3><p>'+item.desc+'</p></div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'
+      +'<span class="item-price">'+fmt(item.price)+'</span>'
+      +'<div class="qty-ctrl">'
+      +'<button class="qbtn" onclick="chg('+item.id+',-1)">−</button>'
+      +'<span class="qnum">'+qty+'</span>'
+      +'<button class="qbtn" onclick="chg('+item.id+',1)">+</button>'
+      +'</div></div></div>';
+  }).join('');
+}
+
+function chg(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);renderItems();}
+function cartItems(){return Object.entries(cart).filter(function(e){return e[1]>0;});}
+function total(){return cartItems().reduce(function(s,e){var it=MENU.find(function(i){return i.id==e[0];});return s+(it?it.price*e[1]:0);},0);}
+
+function goCart(){
+  if(!cartItems().length){alert('Adicione itens primeiro!');return;}
+  document.getElementById('cartRows').innerHTML=cartItems().map(function(e){
+    var it=MENU.find(function(i){return i.id==e[0];});
+    return '<div class="cart-row"><span class="cart-row-emoji">'+it.emoji+'</span>'
+      +'<div class="cart-row-info">'+it.name+'<small>'+e[1]+'x '+fmt(it.price)+'</small></div>'
+      +'<span class="cart-row-price">'+fmt(it.price*e[1])+'</span></div>';
+  }).join('');
+  document.getElementById('totalVal').textContent=fmt(total());
+  document.getElementById('viewCardapio').style.display='none';
+  document.getElementById('viewCarrinho').style.display='block';
+}
+
+function goCardapio(){
+  document.getElementById('viewCarrinho').style.display='none';
+  document.getElementById('viewCardapio').style.display='block';
+}
+
+function sendDirect(){
+  var mesa=document.getElementById('mesaSel').value;
+  if(!mesa){alert('Selecione a mesa!');return;}
+  if(!cartItems().length){alert('Adicione itens!');return;}
+  var btn=document.getElementById('sendBtn');
+  btn.disabled=true; btn.textContent='Enviando...';
+  var items=cartItems().map(function(e){var it=MENU.find(function(i){return i.id==e[0];});return{name:it.name,emoji:it.emoji,qty:e[1],price:it.price};});
+  var order={mesa:mesa,garcom:'Jaime (Chefe)',obs:document.getElementById('obsInput').value,items:items,total:total(),status:'pending',time:new Date().toISOString()};
+  fetch(DB+'/orders.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)})
+    .then(function(){
+      cart={};document.getElementById('obsInput').value='';document.getElementById('mesaSel').value='';
+      goCardapio(); renderItems();
+      toast('✅ Pedido enviado direto para a cozinha!');
+    }).catch(function(){alert('Erro ao enviar.');})
+    .finally(function(){btn.disabled=false;btn.textContent='✅ Enviar direto para a Cozinha';});
+}
+
+// Botão no cardápio para ir ao carrinho
+document.addEventListener('click',function(e){
+  if(e.target && e.target.id==='irCarrinho') goCart();
+});
+
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+
+// Adiciona botão "Ver pedido" fixo
+var fab = document.createElement('button');
+fab.style.cssText='position:fixed;bottom:20px;right:20px;background:#f39c12;color:#000;border:none;border-radius:50px;padding:12px 20px;font-weight:800;font-size:0.9rem;cursor:pointer;z-index:100;box-shadow:0 4px 16px rgba(243,156,18,0.4);display:none;';
+fab.textContent='🛒 Ver pedido';
+fab.onclick=function(){showTab('pedido');goCart();};
+document.body.appendChild(fab);
+
+var origChg = chg;
+function chg(id,d){
+  cart[id]=Math.max(0,(cart[id]||0)+d);
+  var total_items=Object.values(cart).reduce(function(a,b){return a+b;},0);
+  fab.style.display=total_items>0?'block':'none';
+  fab.textContent='🛒 Ver pedido ('+total_items+')';
+  renderItems();
+}
+
+// Poll aprovações a cada 5s
+loadApprovals();
+setInterval(loadApprovals, 5000);
+loadData();
+</script>
+</body>
+</html>

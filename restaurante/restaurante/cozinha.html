@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozinha – Farina</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#0d0d0d; color:white; min-height:100vh; }
+
+  .italia-bar { height:6px; background:linear-gradient(to right, #009246 33.3%, #fff 33.3%, #fff 66.6%, #ce2b37 66.6%); }
+
+  header { background:#0a0a0a; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #222; }
+  .header-brand { display:flex; flex-direction:column; }
+  .header-brand .brand { font-size:1.6rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; }
+  .brand span.g { color:#009246; }
+  .brand span.r { color:#ce2b37; }
+  .header-brand .sub { font-size:0.7rem; color:#555; letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+  .header-right { display:flex; align-items:center; gap:20px; }
+  .clock { font-size:1.8rem; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:2px; }
+  .status-dot { width:10px; height:10px; border-radius:50%; background:#009246; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.3;} }
+
+  .counters { display:flex; gap:20px; }
+  .counter { text-align:center; padding:8px 16px; border-radius:8px; background:#161616; border:1px solid #222; }
+  .counter .num { font-size:1.5rem; font-weight:800; line-height:1; }
+  .counter .lbl { font-size:0.65rem; color:#666; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+  .counter.pend .num { color:#f39c12; }
+  .counter.prep .num { color:#009246; }
+  .counter.done .num { color:#555; }
+
+  .filter-bar { background:#0a0a0a; padding:12px 24px; display:flex; gap:8px; align-items:center; border-bottom:1px solid #1a1a1a; flex-wrap:wrap; }
+  .filter-btn { padding:7px 18px; border-radius:16px; border:1px solid #333; cursor:pointer; font-size:0.82rem; font-weight:600; background:#161616; color:#aaa; transition:all 0.2s; }
+  .filter-btn.active.all { background:#333; color:white; border-color:#444; }
+  .filter-btn.active.pending { background:#f39c12; color:#000; border-color:#f39c12; }
+  .filter-btn.active.preparing { background:#009246; color:#fff; border-color:#009246; }
+  .filter-btn.active.done { background:#444; color:#fff; border-color:#444; }
+
+  .board { padding:20px 24px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; align-items:start; }
+
+  .order-card { border-radius:12px; overflow:hidden; animation:slideIn 0.3s ease; }
+  @keyframes slideIn { from{transform:translateY(-8px);opacity:0;}to{transform:translateY(0);opacity:1;} }
+
+  .card-pending { background:#1a1200; border:1px solid #f39c12; }
+  .card-preparing { background:#001a0a; border:1px solid #009246; }
+  .card-done { background:#111; border:1px solid #2a2a2a; opacity:0.6; }
+
+  .card-header { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .card-pending .card-header { background:#241a00; }
+  .card-preparing .card-header { background:#002211; }
+  .card-done .card-header { background:#161616; }
+
+  .mesa-tag { font-size:1rem; font-weight:700; letter-spacing:0.5px; }
+  .order-id { font-size:0.7rem; color:#555; margin-top:2px; letter-spacing:1px; }
+  .time-badge { font-size:0.78rem; font-weight:700; padding:4px 10px; border-radius:10px; }
+  .card-pending .time-badge { background:#f39c12; color:#000; }
+  .card-preparing .time-badge { background:#009246; color:#fff; }
+  .card-done .time-badge { background:#333; color:#aaa; }
+
+  .card-items { padding:12px 16px; }
+  .card-item { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .card-item:last-child { border-bottom:none; }
+  .card-item-qty { background:rgba(255,255,255,0.1); border-radius:5px; padding:2px 8px; font-weight:700; font-size:0.85rem; min-width:30px; text-align:center; }
+  .card-item-name { flex:1; font-size:0.92rem; color:#eee; }
+  .card-item-emoji { font-size:1.2rem; }
+
+  .card-obs { margin:0 16px 10px; background:rgba(243,156,18,0.1); border-radius:6px; padding:7px 10px; font-size:0.8rem; color:#f39c12; border-left:3px solid #f39c12; }
+
+  .card-actions { padding:10px 16px; display:flex; gap:8px; background:rgba(0,0,0,0.2); }
+  .action-btn { flex:1; padding:10px; border-radius:8px; border:none; font-size:0.85rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; letter-spacing:0.3px; }
+  .action-btn:active { opacity:0.8; }
+  .btn-start { background:#009246; color:white; }
+  .btn-done { background:#ce2b37; color:white; }
+  .btn-undo { background:#2a2a2a; color:#aaa; }
+  .btn-archive { background:#1a0a0a; color:#ce2b37; border:1px solid #ce2b37; }
+
+  .empty-state { grid-column:1/-1; text-align:center; padding:80px 20px; color:#333; }
+  .empty-state span { font-size:4rem; display:block; margin-bottom:16px; }
+  .empty-state p { font-size:1rem; }
+
+  .notif { position:fixed; top:80px; right:20px; background:#009246; color:white; padding:14px 22px; border-radius:10px; font-weight:700; font-size:0.95rem; box-shadow:0 4px 20px rgba(0,146,70,0.4); transform:translateX(200%); transition:transform 0.4s; z-index:999; }
+  .notif.show { transform:translateX(0); }
+</style>
+</head>
+<body>
+
+<div class="italia-bar"></div>
+
+<header>
+  <div class="header-brand">
+    <div class="brand"><span class="g">FA</span>RI<span class="r">NA</span></div>
+    <div class="sub">👨‍🍳 Tela da Cozinha</div>
+  </div>
+  <div class="header-right">
+    <div class="counters">
+      <div class="counter pend"><div class="num" id="cPend">0</div><div class="lbl">Aguardando</div></div>
+      <div class="counter prep"><div class="num" id="cPrep">0</div><div class="lbl">Preparando</div></div>
+      <div class="counter done"><div class="num" id="cDone">0</div><div class="lbl">Prontos</div></div>
+    </div>
+    <div class="clock" id="clock">00:00:00</div>
+    <div class="status-dot"></div>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <span style="font-size:0.82rem;color:#555;margin-right:4px">FILTRAR:</span>
+  <button class="filter-btn all active" onclick="setFilter('all',this)">Todos</button>
+  <button class="filter-btn pending" onclick="setFilter('pending',this)">⏳ Aguardando</button>
+  <button class="filter-btn preparing" onclick="setFilter('preparing',this)">🔥 Preparando</button>
+  <button class="filter-btn done" onclick="setFilter('done',this)">✅ Prontos</button>
+</div>
+
+<div class="board" id="board"><div class="empty-state"><span>🍝</span><p>Aguardando pedidos...</p></div></div>
+<div class="notif" id="notif">🔔 Novo pedido chegou!</div>
+
+<script>
+var DB='https://restaurante-farina-default-rtdb.firebaseio.com';
+var orders={}, filter='all', lastCount=0, firstLoad=true;
+
+function poll(){
+  fetch(DB+'/orders.json').then(function(r){return r.json();}).then(function(data){
+    orders=data||{};
+    var curr=Object.keys(orders).length;
+    if(!firstLoad && curr>lastCount) showNotif();
+    lastCount=curr; firstLoad=false;
+    render();
+  }).catch(function(){});
+}
+
+function elapsed(iso){
+  var d=Math.floor((Date.now()-new Date(iso))/1000),m=Math.floor(d/60),s=d%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+
+function setFilter(f,btn){
+  filter=f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.className='filter-btn '+b.className.split(' ').pop();});
+  btn.className='filter-btn '+f+' active';
+  render();
+}
+
+function updateStatus(key,status){
+  fetch(DB+'/orders/'+key+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:status})})
+    .then(function(){poll();});
+}
+
+function arquivar(key){
+  if(!confirm('Remover este pedido da tela?')) return;
+  fetch(DB+'/orders/'+key+'.json',{method:'DELETE'}).then(function(){poll();});
+}
+
+function render(){
+  var all=Object.keys(orders).map(function(k){return Object.assign({},orders[k],{key:k});});
+  document.getElementById('cPend').textContent=all.filter(function(o){return o.status==='pending';}).length;
+  document.getElementById('cPrep').textContent=all.filter(function(o){return o.status==='preparing';}).length;
+  document.getElementById('cDone').textContent=all.filter(function(o){return o.status==='done';}).length;
+
+  var vis=filter==='all'?all:all.filter(function(o){return o.status===filter;});
+  vis.sort(function(a,b){var ord={pending:0,preparing:1,done:2};return ord[a.status]!==ord[b.status]?ord[a.status]-ord[b.status]:new Date(a.time)-new Date(b.time);});
+
+  var board=document.getElementById('board');
+  if(!vis.length){board.innerHTML='<div class="empty-state"><span>🍝</span><p>Nenhum pedido no momento.</p></div>';return;}
+
+  board.innerHTML=vis.map(function(o){
+    var items=o.items.map(function(it){return '<div class="card-item"><span class="card-item-emoji">'+it.emoji+'</span><span class="card-item-qty">'+it.qty+'x</span><span class="card-item-name">'+it.name+'</span></div>';}).join('');
+    var actions='';
+    if(o.status==='pending') actions='<button class="action-btn btn-start" onclick="updateStatus(\''+o.key+'\',\'preparing\')">🔥 Iniciar Preparo</button>';
+    if(o.status==='preparing') actions='<button class="action-btn btn-undo" onclick="updateStatus(\''+o.key+'\',\'pending\')">↩ Voltar</button><button class="action-btn btn-done" onclick="updateStatus(\''+o.key+'\',\'done\')">✅ Pronto!</button>';
+    if(o.status==='done') actions='<button class="action-btn btn-undo" onclick="updateStatus(\''+o.key+'\',\'preparing\')">↩ Reabrir</button><button class="action-btn btn-archive" onclick="arquivar(\''+o.key+'\')">🗑️ Arquivar</button>';
+    return '<div class="order-card card-'+o.status+'">'
+      +'<div class="card-header"><div><div class="mesa-tag">🪑 '+o.mesa+'</div><div class="order-id">#'+o.key.slice(-4).toUpperCase()+(o.garcom?' · 👤 '+o.garcom:'')+'</div></div>'
+      +'<span class="time-badge">'+elapsed(o.time)+'</span></div>'
+      +'<div class="card-items">'+items+'</div>'
+      +(o.obs?'<div class="card-obs">📝 '+o.obs+'</div>':'')
+      +'<div class="card-actions">'+actions+'</div></div>';
+  }).join('');
+}
+
+function showNotif(){var n=document.getElementById('notif');n.classList.add('show');setTimeout(function(){n.classList.remove('show');},4000);}
+
+function updateClock(){var now=new Date();document.getElementById('clock').textContent=[now.getHours(),now.getMinutes(),now.getSeconds()].map(function(n){return n<10?'0'+n:''+n;}).join(':');}
+setInterval(updateClock,1000); updateClock();
+setInterval(render,15000);
+poll();
+setInterval(poll,8000);
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Farina</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#0d0d0d; color:#eee; }
+
+  .italia-bar { height:5px; background:linear-gradient(to right, #009246 33.3%, #fff 33.3%, #fff 66.6%, #ce2b37 66.6%); }
+
+  header { background:#0a0a0a; color:white; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(0,0,0,0.5); position:sticky; top:0; z-index:50; border-bottom:1px solid #1a1a1a; }
+  .header-brand .brand { font-size:1.3rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; }
+  .brand span.g { color:#009246; }
+  .brand span.r { color:#ce2b37; }
+  .header-brand .sub { font-size:0.65rem; color:#555; letter-spacing:2px; text-transform:uppercase; }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .status-bar { font-size:0.8rem; color:#555; }
+  .save-all-btn { background:#009246; color:white; border:none; padding:10px 22px; border-radius:8px; font-weight:700; font-size:0.9rem; cursor:pointer; transition:background 0.2s; }
+  .save-all-btn:hover { background:#007a3a; }
+
+  .container { max-width:920px; margin:0 auto; padding:28px 20px; display:flex; flex-direction:column; gap:20px; }
+
+  .card { background:#111; border-radius:12px; border:1px solid #1f1f1f; overflow:hidden; }
+  .card-head { padding:14px 22px; background:#161616; border-bottom:1px solid #1f1f1f; display:flex; align-items:center; justify-content:space-between; }
+  .card-head h2 { font-size:0.95rem; font-weight:700; color:#ccc; letter-spacing:0.5px; }
+  .card-body { padding:20px 22px; }
+
+  .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+  .field label { font-size:0.78rem; font-weight:600; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
+  .field input, .field select { padding:10px 12px; border:1px solid #2a2a2a; border-radius:8px; font-size:0.9rem; outline:none; background:#1a1a1a; color:#eee; transition:border 0.2s; }
+  .field input:focus { border-color:#009246; }
+  .field input::placeholder { color:#444; }
+
+  .cat-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .cat-tag { display:flex; align-items:center; gap:6px; background:#1a1a1a; border:1px solid #333; border-radius:20px; padding:5px 12px; font-size:0.82rem; font-weight:600; color:#aaa; }
+  .cat-tag button { background:none; border:none; cursor:pointer; color:#ce2b37; font-size:0.9rem; font-weight:700; }
+  .add-cat-row { display:flex; gap:8px; }
+  .add-cat-row input { flex:1; padding:9px 12px; border:1px solid #2a2a2a; border-radius:8px; font-size:0.9rem; outline:none; background:#1a1a1a; color:#eee; }
+  .add-cat-row input:focus { border-color:#009246; }
+  .add-cat-row input::placeholder { color:#444; }
+  .add-btn-sm { background:#1a1a1a; color:#eee; border:1px solid #333; padding:9px 18px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; }
+  .add-btn-sm:hover { border-color:#009246; color:#009246; }
+
+  .items-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .items-toolbar select { padding:8px 12px; border:1px solid #2a2a2a; border-radius:8px; font-size:0.85rem; outline:none; background:#1a1a1a; color:#eee; }
+  .add-item-btn { background:#ce2b37; color:white; border:none; padding:9px 18px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer; }
+  .add-item-btn:hover { background:#a82230; }
+
+  .item-table { width:100%; border-collapse:collapse; margin-top:14px; }
+  .item-table th { text-align:left; padding:10px 12px; font-size:0.72rem; color:#555; font-weight:600; border-bottom:1px solid #1f1f1f; text-transform:uppercase; letter-spacing:0.5px; }
+  .item-table td { padding:9px 12px; border-bottom:1px solid #191919; vertical-align:middle; }
+  .item-table tr:hover td { background:#161616; }
+
+  .editable { padding:6px 8px; border:1px solid transparent; border-radius:6px; font-size:0.88rem; outline:none; width:100%; background:transparent; color:#eee; transition:all 0.2s; }
+  .editable:focus { border-color:#009246; background:#1a1a1a; }
+  .editable.price { color:#009246; font-weight:700; max-width:80px; }
+  .editable.emoji-f { max-width:55px; text-align:center; font-size:1.1rem; }
+  .cat-select-inline { padding:5px 8px; border:1px solid #2a2a2a; border-radius:6px; font-size:0.8rem; outline:none; max-width:120px; background:#1a1a1a; color:#eee; }
+  .del-btn { background:none; border:none; cursor:pointer; color:#444; font-size:1rem; padding:4px 8px; border-radius:6px; transition:color 0.2s; }
+  .del-btn:hover { color:#ce2b37; }
+  .toggle-btn { background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 8px; }
+
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; align-items:center; justify-content:center; }
+  .overlay.open { display:flex; }
+  .modal { background:#161616; border:1px solid #2a2a2a; border-radius:14px; padding:28px; width:460px; max-width:95vw; }
+  .modal h2 { font-size:1rem; font-weight:700; margin-bottom:20px; color:#eee; }
+  .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+  .modal-grid .full { grid-column:1/-1; }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+  .btn-cancel { background:#1a1a1a; color:#aaa; border:1px solid #333; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer; }
+  .btn-save { background:#ce2b37; color:white; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:#009246; color:white; padding:12px 22px; border-radius:10px; font-weight:700; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; z-index:999; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .section-hint { font-size:0.8rem; color:#555; }
+</style>
+</head>
+<body>
+
+<div class="italia-bar"></div>
+
+<header>
+  <div class="header-brand">
+    <div class="brand"><span class="g">FA</span>RI<span class="r">NA</span></div>
+    <div class="sub">⚙️ Painel de Administração</div>
+  </div>
+  <div class="header-right">
+    <span class="status-bar" id="statusBar">Conectando...</span>
+    <button class="save-all-btn" onclick="saveAll()">💾 Salvar Tudo</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <div class="card-head"><h2>🏪 CONFIGURAÇÕES DO RESTAURANTE</h2></div>
+    <div class="card-body">
+      <div class="config-grid">
+        <div class="field"><label>Nome do Restaurante</label><input type="text" id="cfgName" placeholder="Ex: Restaurante Farina"></div>
+        <div class="field"><label>Emoji / Ícone</label><input type="text" id="cfgEmoji" placeholder="Ex: 🍕"></div>
+        <div class="field"><label>Endereço</label><input type="text" id="cfgAddress" placeholder="Ex: Rua das Flores, 123"></div>
+        <div class="field"><label>Telefone</label><input type="text" id="cfgPhone" placeholder="Ex: (11) 99999-9999"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>👨‍🍽️ GARÇONS</h2></div>
+    <div class="card-body">
+      <div class="cat-list" id="garconList"></div>
+      <div class="add-cat-row">
+        <input type="text" id="newGarconInput" placeholder="Nome do garçom..." onkeydown="if(event.key==='Enter')addGarcon()">
+        <button class="add-btn-sm" onclick="addGarcon()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>🗂️ CATEGORIAS DO CARDÁPIO</h2></div>
+    <div class="card-body">
+      <div class="cat-list" id="catList"></div>
+      <div class="add-cat-row">
+        <input type="text" id="newCatInput" placeholder="Nova categoria..." onkeydown="if(event.key==='Enter')addCat()">
+        <button class="add-btn-sm" onclick="addCat()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>🍽️ ITENS DO CARDÁPIO</h2></div>
+    <div class="card-body">
+      <div class="items-toolbar">
+        <select id="filterCat" onchange="renderItems()"><option value="">Todas as categorias</option></select>
+        <button class="add-item-btn" onclick="openModal()">+ Novo Item</button>
+        <span class="section-hint" id="itemCount"></span>
+      </div>
+      <table class="item-table">
+        <thead><tr><th>Emoji</th><th>Nome</th><th>Descrição</th><th>Categoria</th><th>Preço</th><th>Ativo</th><th></th></tr></thead>
+        <tbody id="itemBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>➕ Novo Item do Cardápio</h2>
+    <div class="modal-grid">
+      <div class="field"><label>Emoji</label><input type="text" id="mEmoji" placeholder="🍕" maxlength="4"></div>
+      <div class="field"><label>Categoria</label><select id="mCat" style="background:#1a1a1a;color:#eee;border:1px solid #2a2a2a;padding:10px;border-radius:8px;width:100%"></select></div>
+      <div class="field full"><label>Nome</label><input type="text" id="mName" placeholder="Ex: Spaghetti Carbonara"></div>
+      <div class="field full"><label>Descrição</label><input type="text" id="mDesc" placeholder="Ex: Massa al dente com ovo e pancetta"></div>
+      <div class="field"><label>Preço (R$)</label><input type="number" id="mPrice" placeholder="0.00" step="0.01" min="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveNewItem()">Salvar Item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+var firebaseConfig={apiKey:"AIzaSyBJMTev1mtFTKC1hBS52ayou17VehIgvIY",authDomain:"restaurante-farina.firebaseapp.com",projectId:"restaurante-farina",storageBucket:"restaurante-farina.firebasestorage.app",messagingSenderId:"165093673013",appId:"1:165093673013:web:b63441c0c1f1111ffb497c",databaseURL:"https://restaurante-farina-default-rtdb.firebaseio.com"};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.database();
+
+var DEFAULT_MENU=[
+  {id:1,cat:'Entradas',name:'Bruschetta',desc:'Pão tostado com tomate e manjericão',price:18,emoji:'🥖',active:true},
+  {id:2,cat:'Entradas',name:'Carpaccio',desc:'Carne bovina com parmesão e rúcula',price:32,emoji:'🥩',active:true},
+  {id:3,cat:'Entradas',name:'Sopa do Dia',desc:'Pergunte ao garçom',price:22,emoji:'🍲',active:true},
+  {id:4,cat:'Massas',name:'Spaghetti Bolonhesa',desc:'Molho de carne moída',price:42,emoji:'🍝',active:true},
+  {id:5,cat:'Massas',name:'Fettuccine ao Pesto',desc:'Pesto de manjericão fresco',price:38,emoji:'🍜',active:true},
+  {id:6,cat:'Massas',name:'Lasanha da Casa',desc:'Massa, queijo e molho especial',price:45,emoji:'🫕',active:true},
+  {id:7,cat:'Carnes',name:'Filé ao Molho Madeira',desc:'Filé mignon grelhado',price:68,emoji:'🥩',active:true},
+  {id:8,cat:'Carnes',name:'Costelinha BBQ',desc:'Molho barbecue defumado',price:55,emoji:'🍖',active:true},
+  {id:9,cat:'Pizzas',name:'Margherita',desc:'Molho, muçarela e manjericão',price:48,emoji:'🍕',active:true},
+  {id:10,cat:'Pizzas',name:'Quatro Queijos',desc:'Muçarela, parmesão, gorgonzola, catupiry',price:52,emoji:'🍕',active:true},
+  {id:11,cat:'Bebidas',name:'Suco Natural',desc:'Laranja, limão ou maracujá',price:12,emoji:'🍊',active:true},
+  {id:12,cat:'Bebidas',name:'Refrigerante',desc:'Coca, Guaraná ou Soda',price:8,emoji:'🥤',active:true},
+  {id:13,cat:'Bebidas',name:'Água Mineral',desc:'Com ou sem gás',price:6,emoji:'💧',active:true},
+  {id:14,cat:'Sobremesas',name:'Tiramisu',desc:'Café e mascarpone',price:28,emoji:'🍰',active:true},
+  {id:15,cat:'Sobremesas',name:'Petit Gâteau',desc:'Bolo quente com sorvete',price:32,emoji:'🎂',active:true}
+];
+var config={name:'Restaurante Farina',emoji:'🍽️',address:'',phone:''};
+var cats=['Entradas','Massas','Carnes','Pizzas','Bebidas','Sobremesas'];
+var garcons=[];
+var menu=DEFAULT_MENU.map(function(i){return Object.assign({},i);});
+var nextId=16;
+
+db.ref('config').once('value',function(s){if(s.exists()){config=s.val();loadConfig();}document.getElementById('statusBar').textContent='🟢 Conectado';});
+db.ref('cats').once('value',function(s){if(s.exists()){cats=s.val();renderCats();}});
+db.ref('garcons').once('value',function(s){if(s.exists()){garcons=s.val();}renderGarcons();});
+db.ref('menu').once('value',function(s){if(s.exists()){menu=Object.values(s.val());nextId=Math.max.apply(null,menu.map(function(i){return i.id;}))+1;}renderItems();});
+
+function loadConfig(){document.getElementById('cfgName').value=config.name||'';document.getElementById('cfgEmoji').value=config.emoji||'';document.getElementById('cfgAddress').value=config.address||'';document.getElementById('cfgPhone').value=config.phone||'';}
+
+function renderCats(){
+  document.getElementById('catList').innerHTML=cats.map(function(c){return '<div class="cat-tag">'+c+'<button onclick="removeCat(\''+c+'\')">×</button></div>';}).join('');
+  var opts=cats.map(function(c){return '<option>'+c+'</option>';}).join('');
+  document.getElementById('filterCat').innerHTML='<option value="">Todas as categorias</option>'+opts;
+  document.getElementById('mCat').innerHTML=opts;
+}
+
+function addCat(){var v=document.getElementById('newCatInput').value.trim();if(!v||cats.indexOf(v)>=0)return;cats.push(v);document.getElementById('newCatInput').value='';renderCats();}
+function removeCat(c){if(menu.some(function(i){return i.cat===c;})&&!confirm('Remover categoria "'+c+'"?'))return;cats=cats.filter(function(x){return x!==c;});renderCats();renderItems();}
+
+function renderGarcons(){
+  document.getElementById('garconList').innerHTML=garcons.map(function(g){
+    return '<div class="cat-tag">👤 '+g+'<button onclick="removeGarcon(\''+g+'\')">×</button></div>';
+  }).join('') || '<span style="color:#555;font-size:0.85rem">Nenhum garçom cadastrado ainda.</span>';
+}
+function addGarcon(){var v=document.getElementById('newGarconInput').value.trim();if(!v||garcons.indexOf(v)>=0)return;garcons.push(v);document.getElementById('newGarconInput').value='';renderGarcons();}
+function removeGarcon(g){if(!confirm('Remover garçom "'+g+'"?'))return;garcons=garcons.filter(function(x){return x!==g;});renderGarcons();}
+
+function renderItems(){
+  var f=document.getElementById('filterCat').value;
+  var items=f?menu.filter(function(i){return i.cat===f;}):menu;
+  document.getElementById('itemCount').textContent=items.length+' item(s)';
+  document.getElementById('itemBody').innerHTML=items.map(function(item){
+    return '<tr>'
+      +'<td><input class="editable emoji-f" value="'+item.emoji+'" onchange="updateField('+item.id+',\'emoji\',this.value)" maxlength="4"></td>'
+      +'<td><input class="editable" value="'+item.name+'" onchange="updateField('+item.id+',\'name\',this.value)" style="min-width:130px"></td>'
+      +'<td><input class="editable" value="'+item.desc+'" onchange="updateField('+item.id+',\'desc\',this.value)" style="min-width:170px"></td>'
+      +'<td><select class="cat-select-inline" onchange="updateField('+item.id+',\'cat\',this.value)">'+cats.map(function(c){return '<option'+(c===item.cat?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td>'
+      +'<td><input class="editable price" type="number" value="'+item.price+'" step="0.01" min="0" onchange="updateField('+item.id+',\'price\',parseFloat(this.value))"></td>'
+      +'<td><button class="toggle-btn" onclick="toggleActive('+item.id+')">'+(item.active?'✅':'⛔')+'</button></td>'
+      +'<td><button class="del-btn" onclick="deleteItem('+item.id+')">🗑️</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function updateField(id,f,v){var it=menu.find(function(i){return i.id===id;});if(it)it[f]=v;}
+function toggleActive(id){var it=menu.find(function(i){return i.id===id;});if(it){it.active=!it.active;renderItems();}}
+function deleteItem(id){if(!confirm('Excluir este item?'))return;menu=menu.filter(function(i){return i.id!==id;});renderItems();}
+
+function openModal(){document.getElementById('mEmoji').value='';document.getElementById('mName').value='';document.getElementById('mDesc').value='';document.getElementById('mPrice').value='';renderCats();document.getElementById('overlay').classList.add('open');}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+
+function saveNewItem(){
+  var name=document.getElementById('mName').value.trim(),price=parseFloat(document.getElementById('mPrice').value);
+  if(!name||isNaN(price)){alert('Preencha nome e preço!');return;}
+  menu.push({id:nextId++,cat:document.getElementById('mCat').value||cats[0],name:name,desc:document.getElementById('mDesc').value.trim(),price:price,emoji:document.getElementById('mEmoji').value||'🍽️',active:true});
+  closeModal();renderItems();toast('Item adicionado!');
+}
+
+function saveAll(){
+  config={name:document.getElementById('cfgName').value.trim()||'Restaurante',emoji:document.getElementById('cfgEmoji').value.trim()||'🍽️',address:document.getElementById('cfgAddress').value.trim(),phone:document.getElementById('cfgPhone').value.trim()};
+  var menuObj={};menu.forEach(function(i){menuObj[i.id]=i;});
+  db.ref('config').set(config);
+  db.ref('cats').set(cats);
+  db.ref('garcons').set(garcons.length ? garcons : []);
+  db.ref('menu').set(menuObj,function(err){err?alert('Erro: '+err.message):toast('✅ Salvo! Cardápio atualizado em todos os dispositivos.');});
+}
+
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3500);}
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target===document.getElementById('overlay'))closeModal();});
+loadConfig();renderCats();renderItems();
+</script>
+</body>
+</html>
