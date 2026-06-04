@@ -72,6 +72,7 @@
   .btn-start { background:#009246; color:white; }
   .btn-done { background:#ce2b37; color:white; }
   .btn-undo { background:#2a2a2a; color:#aaa; }
+  .btn-archive { background:#1a0a0a; color:#ce2b37; border:1px solid #ce2b37; }
 
   .empty-state { grid-column:1/-1; text-align:center; padding:80px 20px; color:#333; }
   .empty-state span { font-size:4rem; display:block; margin-bottom:16px; }
@@ -143,6 +144,11 @@ function updateStatus(key,status){
     .then(function(){poll();});
 }
 
+function arquivar(key){
+  if(!confirm('Remover este pedido da tela?')) return;
+  fetch(DB+'/orders/'+key+'.json',{method:'DELETE'}).then(function(){poll();});
+}
+
 function render(){
   var all=Object.keys(orders).map(function(k){return Object.assign({},orders[k],{key:k});});
   document.getElementById('cPend').textContent=all.filter(function(o){return o.status==='pending';}).length;
@@ -160,9 +166,9 @@ function render(){
     var actions='';
     if(o.status==='pending') actions='<button class="action-btn btn-start" onclick="updateStatus(\''+o.key+'\',\'preparing\')">🔥 Iniciar Preparo</button>';
     if(o.status==='preparing') actions='<button class="action-btn btn-undo" onclick="updateStatus(\''+o.key+'\',\'pending\')">↩ Voltar</button><button class="action-btn btn-done" onclick="updateStatus(\''+o.key+'\',\'done\')">✅ Pronto!</button>';
-    if(o.status==='done') actions='<button class="action-btn btn-undo" onclick="updateStatus(\''+o.key+'\',\'preparing\')">↩ Reabrir</button>';
+    if(o.status==='done') actions='<button class="action-btn btn-undo" onclick="updateStatus(\''+o.key+'\',\'preparing\')">↩ Reabrir</button><button class="action-btn btn-archive" onclick="arquivar(\''+o.key+'\')">🗑️ Arquivar</button>';
     return '<div class="order-card card-'+o.status+'">'
-      +'<div class="card-header"><div><div class="mesa-tag">🪑 '+o.mesa+'</div><div class="order-id">#'+o.key.slice(-4).toUpperCase()+'</div></div>'
+      +'<div class="card-header"><div><div class="mesa-tag">🪑 '+o.mesa+'</div><div class="order-id">#'+o.key.slice(-4).toUpperCase()+(o.garcom?' · 👤 '+o.garcom:'')+'</div></div>'
       +'<span class="time-badge">'+elapsed(o.time)+'</span></div>'
       +'<div class="card-items">'+items+'</div>'
       +(o.obs?'<div class="card-obs">📝 '+o.obs+'</div>':'')
