@@ -143,6 +143,7 @@
     <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Buscar item..." oninput="renderItems()"></div>
     <div class="cat-scroll" id="catScroll"></div>
     <div class="item-list" id="itemList"><div class="empty-state">Carregando...</div></div>
+    <button id="verPedidoBtn" onclick="goCart()" style="display:none;width:calc(100% - 32px);margin:12px 16px;padding:14px;background:#f39c12;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;">🛒 Ver pedido</button>
   </div>
   <div id="viewCarrinho" style="display:none">
     <div class="cart-section" id="cartRows"></div>
@@ -336,19 +337,16 @@ document.addEventListener('click',function(e){
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 
 // Adiciona botão "Ver pedido" fixo
-var fab = document.createElement('button');
-fab.style.cssText='position:fixed;bottom:20px;right:20px;background:#f39c12;color:#000;border:none;border-radius:50px;padding:12px 20px;font-weight:800;font-size:0.9rem;cursor:pointer;z-index:100;box-shadow:0 4px 16px rgba(243,156,18,0.4);display:none;';
-fab.textContent='🛒 Ver pedido';
-fab.onclick=function(){showTab('pedido');goCart();};
-document.body.appendChild(fab);
-
-var origChg = chg;
 function chg(id,d){
   cart[id]=Math.max(0,(cart[id]||0)+d);
-  var total_items=Object.values(cart).reduce(function(a,b){return a+b;},0);
-  fab.style.display=total_items>0?'block':'none';
-  fab.textContent='🛒 Ver pedido ('+total_items+')';
   renderItems();
+  // Mostra botão ver pedido no rodapé
+  var total_items=Object.values(cart).reduce(function(a,b){return a+b;},0);
+  var verBtn=document.getElementById('verPedidoBtn');
+  if(verBtn){
+    verBtn.style.display=total_items>0?'block':'none';
+    verBtn.textContent='🛒 Ver pedido ('+total_items+')';
+  }
 }
 
 // Poll aprovações a cada 5s
